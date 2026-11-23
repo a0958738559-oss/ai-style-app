@@ -1,1 +1,25 @@
 
+{
+  "name": "AI 百變造型 App",
+  "short_name": "AI百變造型",
+  "description": "AI 百變造型手機應用程式",
+  "lang": "zh-TW",
+  "start_url": "/ai-style-app/",
+  "scope": "/ai-style-app/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#7133d3",
+  "icons": [
+    {
+      "src": "icon-192(3).png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512(4).png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+
