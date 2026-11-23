@@ -1,1 +1,150 @@
 
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#17133d">
+  <meta name="description" content="AI 百變造型手機版：上傳照片、體驗風格預覽、規劃未來 AI 造型服務。">
+  <title>AI 百變造型</title>
+  <style>
+    :root{color-scheme:light;--ink:#25234b;--muted:#6b6b86;--purple:#7652ea;--line:#e8e4f3}
+    *{box-sizing:border-box}body{margin:0;background:#f7f5fc;color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif}
+    header{background:linear-gradient(125deg,#17133d,#6942c6);padding:28px 18px 34px;color:#fff;text-align:center}
+    header h1{font-size:29px;margin:5px 0 7px}header p{margin:0;opacity:.9;font-size:14px}
+    .tag{display:inline-block;border-radius:99px;background:#ffffff2a;padding:6px 12px;font-size:12px}
+    main{width:min(100%,640px);margin:-17px auto 30px;padding:0 14px}
+    .card{background:#fff;border:1px solid var(--line);border-radius:19px;padding:18px;margin-bottom:15px;box-shadow:0 8px 27px #30205f0a}
+    h2{font-size:19px;margin:0 0 10px}.muted{color:var(--muted);font-size:13px;line-height:1.65;margin:0 0 12px}
+    .upload{border:2px dashed #c9b7f6;background:#f8f5ff;border-radius:16px;text-align:center;padding:20px 13px;cursor:pointer;display:block}
+    .upload strong{display:block;margin:5px}.upload small{display:block;color:var(--muted)}
+    .upload input{display:none}.preview{margin-top:14px;border-radius:16px;overflow:hidden;background:#eee9f8;position:relative;min-height:205px;display:grid;place-items:center}
+    .preview img{display:block;max-width:100%;max-height:430px;object-fit:contain}
+    .hint{color:#7c7593;text-align:center;padding:60px 10px;font-size:14px}
+    .styles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+    .style{border:2px solid #ece8f5;border-radius:14px;background:#fff;padding:12px 4px;min-height:94px;text-align:center;font:inherit;color:var(--ink);cursor:pointer}
+    .style .emoji{display:block;font-size:28px;margin-bottom:5px}.style .name{font-size:13px;font-weight:700}
+    .style.active{border-color:var(--purple);background:#f5f0ff;box-shadow:0 0 0 2px #7652ea13}
+    .actions{display:grid;gap:9px;margin-top:15px}.btn{border:0;border-radius:12px;padding:14px 16px;font:inherit;font-weight:750;cursor:pointer;background:var(--purple);color:#fff}
+    .btn:disabled{opacity:.5;cursor:not-allowed}.btn.secondary{background:#f0eafa;color:#5a3cbd}.btn.outline{background:#fff;border:1px solid #cfc4e9;color:#6544ba}
+    .notice{background:#fbf7ee;color:#795c2e;border-radius:12px;padding:12px;font-size:13px;line-height:1.65;margin-top:13px}
+    .plans{display:grid;grid-template-columns:1fr 1fr;gap:10px}.plan{border:1px solid var(--line);border-radius:14px;padding:13px;background:#fefeff}
+    .plan strong{display:block;margin-bottom:8px}.plan .price{font-weight:800;color:#6040b2}.plan small{display:block;color:var(--muted);margin-top:6px;line-height:1.5}
+    footer{text-align:center;font-size:12px;color:#77718e;padding:0 16px 25px;line-height:1.6}
+    #toast{position:fixed;z-index:10;bottom:25px;left:50%;transform:translateX(-50%);background:#252144;color:#fff;padding:12px 16px;border-radius:12px;display:none;width:max-content;max-width:90%;font-size:14px}
+    @media(max-width:350px){.styles{grid-template-columns:repeat(2,minmax(0,1fr))}.plans{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header>
+    <span class="tag">免費體驗版 · 手機適用</span>
+    <h1>✨ AI 百變造型</h1>
+    <p>一張照片，開啟多種風格靈感</p>
+  </header>
+  <main>
+    <section class="card">
+      <h2>① 上傳你的照片</h2>
+      <p class="muted">選擇手機相簿中的照片。這個展示版的圖片只在本機處理，不會上傳到伺服器。</p>
+      <label class="upload" for="photo">
+        <span style="font-size:32px">📸</span>
+        <strong>點這裡選擇照片</strong>
+        <small>支援 JPG、PNG、WebP 等圖片</small>
+        <input id="photo" type="file" accept="image/*">
+      </label>
+      <div class="preview" id="preview"><div class="hint">選好照片後，會顯示在這裡</div></div>
+    </section>
+    <section class="card">
+      <h2>② 選擇喜歡的造型</h2>
+      <p class="muted">先試試 6 種色調風格。正式的 AI 服裝、髮型及背景變換功能將於後續接入。</p>
+      <div class="styles" id="styles">
+        <button class="style active" data-style="wedding" aria-pressed="true"><span class="emoji">👰</span><span class="name">夢幻婚紗</span></button>
+        <button class="style" data-style="kimono" aria-pressed="false"><span class="emoji">👘</span><span class="name">日系和風</span></button>
+        <button class="style" data-style="princess" aria-pressed="false"><span class="emoji">👑</span><span class="name">公主風格</span></button>
+        <button class="style" data-style="fashion" aria-pressed="false"><span class="emoji">💃</span><span class="name">時尚名媛</span></button>
+        <button class="style" data-style="office" aria-pressed="false"><span class="emoji">💼</span><span class="name">專業形象</span></button>
+        <button class="style" data-style="comic" aria-pressed="false"><span class="emoji">🎨</span><span class="name">繽紛漫畫</span></button>
+      </div>
+      <div class="actions">
+        <button class="btn" id="try" type="button">✨ 套用免費風格預覽</button>
+        <button class="btn secondary" id="save" type="button" disabled>⬇️ 儲存預覽照片</button>
+      </div>
+      <div class="notice">目前是可操作的照片濾鏡示範，<b>不會真正更換衣服、髮型或人物姿勢</b>。真正的 AI 百變換裝需要連接 AI 圖像服務。</div>
+    </section>
+    <section class="card">
+      <h2>③ 會員與付費造型</h2>
+      <div class="plans">
+        <div class="plan"><strong>🎁 免費會員</strong><span class="price">免費</span><small>上傳照片與套用本機風格濾鏡</small></div>
+        <div class="plan"><strong>💎 AI 進階會員</strong><span class="price">價格待定</span><small>未來開放 AI 換裝、專屬造型與點數方案</small></div>
+      </div>
+      <button class="btn outline" id="coming" type="button" style="width:100%;margin-top:12px">會員訂閱／付費製作（尚未開放）</button>
+      <p class="muted" style="margin:10px 0 0">目前不會收款，也不需要輸入信用卡或會員密碼。</p>
+    </section>
+  </main>
+  <footer>AI 百變造型 · 示範版 v1.0<br>圖片不會從此頁面傳送至外部服務</footer>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script>
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    const looks = {
+      wedding: {name:'夢幻婚紗', filter:'brightness(1.12) contrast(.95) saturate(.83) sepia(.07)'},
+      kimono: {name:'日系和風', filter:'sepia(.25) saturate(1.22) contrast(1.04)'},
+      princess: {name:'公主風格', filter:'brightness(1.12) saturate(1.28) hue-rotate(-12deg)'},
+      fashion: {name:'時尚名媛', filter:'contrast(1.2) saturate(1.25)'},
+      office: {name:'專業形象', filter:'contrast(1.08) saturate(.73) brightness(1.03)'},
+      comic: {name:'繽紛漫畫', filter:'contrast(1.48) saturate(1.8)'}
+    };
+    let selected = 'wedding', source = null, output = null;
+    function toast(message){const t=$('toast');t.textContent=message;t.style.display='block';clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.style.display='none',2700)}
+    $('photo').addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) return toast('請選擇圖片檔案');
+      if (file.size > 20 * 1024 * 1024) return toast('請選擇 20MB 以下的照片');
+      const url=URL.createObjectURL(file);
+      const img=new Image();
+      img.onload=()=>{if(source && source.url)URL.revokeObjectURL(source.url);source={img,url};output=null;$('save').disabled=true;
+        const display=document.createElement('img');display.alt='已選擇的照片';display.src=url;
+        $('preview').replaceChildren(display);toast('照片已載入，現在選造型');};
+      img.onerror=()=>{URL.revokeObjectURL(url);toast('無法讀取這張照片，請換一張')};
+      img.src=url;
+    });
+    $('styles').addEventListener('click',(event)=>{
+      const btn=event.target.closest('button[data-style]');if(!btn)return;
+      selected=btn.dataset.style;
+      document.querySelectorAll('.style').forEach(el=>{let active=el===btn;el.classList.toggle('active',active);el.setAttribute('aria-pressed',String(active))});
+      if(source)toast('已選 '+looks[selected].name+'，請點套用預覽');
+    });
+    $('try').addEventListener('click',()=>{
+      if(!source)return toast('請先上傳照片');
+      try {
+        const img=source.img;
+        const scale=Math.min(1,1400/Math.max(img.naturalWidth,img.naturalHeight));
+        const w=Math.max(1,Math.round(img.naturalWidth*scale)),h=Math.max(1,Math.round(img.naturalHeight*scale));
+        const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+        const ctx=canvas.getContext('2d');if(!ctx)throw new Error('canvas');
+        ctx.filter=looks[selected].filter;ctx.drawImage(img,0,0,w,h);ctx.filter='none';
+        const size=Math.max(18,Math.min(44,Math.round(w*.045)));
+        ctx.font=`bold ${size}px system-ui, sans-serif`;
+        const label='風格預覽 · '+looks[selected].name;
+        const pad=Math.round(size*.6),tw=ctx.measureText(label).width;
+        ctx.fillStyle='rgba(25,20,62,.72)';ctx.fillRect(0,h-size-pad*2,Math.min(w,tw+pad*2),size+pad*2);
+        ctx.fillStyle='#fff';ctx.fillText(label,pad,h-pad);
+        output=canvas;$('save').disabled=false;
+        const display=document.createElement('img');display.alt=looks[selected].name+'色調預覽';display.src=canvas.toDataURL('image/png');
+        $('preview').replaceChildren(display);toast('已套用預覽，可儲存照片');
+      } catch(err){console.error(err);toast('預覽失敗，請換一張較小的照片再試')}
+    });
+    $('save').addEventListener('click',()=>{
+      if(!output)return toast('請先套用風格預覽');
+      output.toBlob(blob=>{
+        if(!blob)return toast('儲存失敗，請重試');
+        const url=URL.createObjectURL(blob),a=document.createElement('a');
+        a.href=url;a.download='AI百變造型-'+selected+'.png';document.body.append(a);a.click();a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),5000);
+        toast('已送出圖片下載，請查看手機下載資料夾');
+      },'image/png');
+    });
+    $('coming').addEventListener('click',()=>toast('AI 換裝與安全付款功能尚未開放，現在不收費'));
+  </script>
+</body>
+</html>
